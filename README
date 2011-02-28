@@ -1,0 +1,5 @@
+Some small shell tools for ssh 
+
+  * cssh : show a dialog box to select a ssh server
+  * ssh-del-id : remove a ssh key from the authorized file of some hosts
+
