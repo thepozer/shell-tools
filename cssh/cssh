@@ -1,0 +1,30 @@
+#! /bin/bash
+
+p1="$1" ;
+sshUser=${p1:-www} ;
+
+sshConfigFile=~/.ssh/servers.xml ;
+
+XsltFileAll=$(mktemp -t 'cssh-xslt-XXXXXXX' ) ;
+cat > "${XsltFileAll}" <<EOD
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<xsl:output method="text" encoding="ISO-8859-1"/>
+<xsl:template match="/"><xsl:apply-templates select="/servers/server"/></xsl:template>
+<xsl:template match="/servers/server"><![CDATA[ ']]><xsl:value-of select="host"/><![CDATA[' ']]><xsl:value-of select="company"/><![CDATA[' ]]></xsl:template>
+</xsl:stylesheet>
+EOD
+ServerList=$(xsltproc "${XsltFileAll}" "${sshConfigFile}") ;
+rm -f "${XsltFileAll}";
+
+
+TagFile=$(mktemp -t 'cssh-dlg-XXXXXXX' ) ;
+eval "dialog --menu Servers 22 70 15 ${ServerList} 2> ${TagFile}" ;
+SelectTag=$(cat "${TagFile}") ;
+rm -f "${TagFile}" "${XsltFileAll}";
+
+if [ "1" != "1${SelectTag}" ] ; then
+	clear ;
+	echo "Connecting to ${SelectTag}" ;
+	ssh "${sshUser}@${SelectTag}" ;
+fi ;

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<servers>
+	<server><company>Company</company><host>server1.company.com</host></server>
+	<server><company>Company</company><host>server2.company.com</host></server>
+	<server><company>Other Company</company><host>server1.other-company.com</host></server>
+</servers>
