@@ -1,0 +1,20 @@
+#! /bin/bash
+
+if [ "x$1" = 'x' ] ; then
+	echo "Usage: $0 key-email [user@]machine [[user@]machine ...]" ;
+	exit 0;
+fi
+
+sKey=$1 ; shift ;
+
+while [ "x$1" != 'x' ] ; do
+	sHost=$1 ;
+	
+	if [ "0$(ssh "${sHost}" "grep -c '$sKey' .ssh/authorized_keys")" -gt 0 ] ; then
+		echo "+ Key found on '${sHost}'." ;
+	else
+		echo "- Key not found on '${sHost}'." ;
+	fi
+	
+	shift ;
+done

@@ -1,0 +1,15 @@
+#! /bin/bash
+
+if [ "x$1" = 'x' ] ; then
+	echo "Usage: $0 [user@]machine [[user@]machine ...]" ;
+	exit 0;
+fi
+
+while [ "x$1" != 'x' ] ; do
+	sHost=$1 ;
+	
+	echo " - Authorized keys for '${sHost}' -" ;
+	ssh "${sHost}" 'cat .ssh/authorized_keys | cut -d " " -f 3' ;
+	
+	shift ;
+done

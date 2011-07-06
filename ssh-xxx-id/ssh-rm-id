@@ -1,0 +1,22 @@
+#! /bin/bash
+
+if [ "x$1" = "x" -a "x$2" = "x" ] ; then
+	echo "Usage: $0 key-email [user@]machine [[user@]machine ...]" ;
+	exit 0;
+fi
+
+sKey=$1 ; shift ;
+
+while [ "x$1" != 'x' ] ; do
+	sHost=$1 ;
+	
+	echo -n "Removing key '${sKey}' of '${sHost}' : " ;
+	ssh "${sHost}" "cp -f .ssh/authorized_keys .ssh/authorized_keys.old ; cat .ssh/authorized_keys.old | grep -v '$sKey' > .ssh/authorized_keys" ;
+	if [ $? = 0 ] ; then
+		echo "Ok." ;
+	else
+		echo "Error !!!" ;
+	fi
+	
+	shift ;
+done
