@@ -17,8 +17,8 @@ if [ "$1" = "-i" ] ; then
 	sCatKey="cat '${sFile}'" ;
 else
 	if [ "x$SSH_AUTH_SOCK" != "x" ] && ssh-add -L >/dev/null 2>&1; then
-    sCatKey = "ssh-add -L" ;
-  fi
+		sCatKey="ssh-add -L" ;
+	fi
 fi
 
 if [ -z "$(eval "${sCatKey}")" ]; then
