@@ -1,24 +1,29 @@
 #! /bin/bash
 
 if [ "x$1" = 'x' ] ; then
-	echo "Usage: $0 [-i [identity_file]] [user@]machine [[user@]machine ...]" ;
+	echo "Usage: $0 [-i [identity_file] [-i [identity_file] ...]] [user@]machine [[user@]machine ...]" ;
 	exit 0;
 fi
 
 sCatKey="" ;
 if [ "$1" = "-i" ] ; then
-	shift ;
-	sFile="$1" ;
-	if [ -r "${sFile}" ] ; then
+	while [ "$1" = "-i" ] ; do
 		shift ;
-	else
-		sFile="${HOME}/.ssh/id_rsa.pub" ;
-	fi ;
-	sCatKey="cat '${sFile}'" ;
-else
+		sFile="$1" ;
+		if [ -r "${sFile}" ] ; then
+			shift ;
+		else
+			sFile="${HOME}/.ssh/id_rsa.pub" ;
+		fi ;
+		sCatKey="${sCatKey} '${sFile}'" ;
+	done
+	sCatKey="cat ${sCatKey}" ;
+fi
+
+if [ "${sCatKey}" = "" ] ; then
 	if [ "x$SSH_AUTH_SOCK" != "x" ] && ssh-add -L >/dev/null 2>&1; then
-		sCatKey="ssh-add -L" ;
-	fi
+    sCatKey = "ssh-add -L" ;
+  fi
 fi
 
 if [ -z "$(eval "${sCatKey}")" ]; then
