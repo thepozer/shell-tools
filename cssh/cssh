@@ -1,30 +1,66 @@
 #! /bin/bash
 
-p1="$1" ;
-sshUser=${p1:-www} ;
+while [ "x$1" != 'x' ] ; do
+	if [ "${1}" = "-c" ] ; then
+		shift ;
+		sCompany="${1}" ;
+		sXsltPathServer="/servers/server[company='${sCompany}']" ;
+		shift ;
+	elif [ "${1}" = "-l" -o  "${1}" = "--list" ] ; then
+		bList=1 ;
+		shift ;
+	elif [ "${1}" = "-h" -o  "${1}" = "--help" ] ; then
+		echo "Usage : ${0} [-h|--help] [-l|--list] [-c company] [username]" ;
+		exit 0;
+	else
+		sSshUser="${1}" ;
+		shift ;
+	fi
+done
 
-sshConfigFile=~/.ssh/servers.xml ;
+sSshConfigFile=~/.ssh/servers.xml ;
 
-XsltFileAll=$(mktemp -t 'cssh-xslt-XXXXXXX' ) ;
-cat > "${XsltFileAll}" <<EOD
+bList=${bList:-0} ;
+sSshUser=${sSshUser:-www} ;
+sXsltPathServer=${sXsltPathServer:-/servers/server} ;
+
+sXsltFileAll=$(mktemp -t 'cssh-xslt-XXXXXXX' ) ;
+
+if [ ${bList} -ne 1 ] ; then
+ ## Show Dialog Box
+	cat > "${sXsltFileAll}" <<EOD
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
 <xsl:output method="text" encoding="ISO-8859-1"/>
-<xsl:template match="/"><xsl:apply-templates select="/servers/server"/></xsl:template>
+<xsl:template match="/"><xsl:apply-templates select="${sXsltPathServer}"/></xsl:template>
 <xsl:template match="/servers/server"><![CDATA[ ']]><xsl:value-of select="host"/><![CDATA[' ']]><xsl:value-of select="company"/><![CDATA[' ]]></xsl:template>
 </xsl:stylesheet>
 EOD
-ServerList=$(xsltproc "${XsltFileAll}" "${sshConfigFile}") ;
-rm -f "${XsltFileAll}";
-
-
-TagFile=$(mktemp -t 'cssh-dlg-XXXXXXX' ) ;
-eval "dialog --menu Servers 22 70 15 ${ServerList} 2> ${TagFile}" ;
-SelectTag=$(cat "${TagFile}") ;
-rm -f "${TagFile}" "${XsltFileAll}";
-
-if [ "1" != "1${SelectTag}" ] ; then
-	clear ;
-	echo "Connecting to ${SelectTag}" ;
-	ssh "${sshUser}@${SelectTag}" ;
-fi ;
+	sServerList=$(xsltproc "${sXsltFileAll}" "${sSshConfigFile}") ;
+	rm -f "${sXsltFileAll}";
+	
+	
+	sTagFile=$(mktemp -t 'cssh-dlg-XXXXXXX' ) ;
+	eval "dialog --menu Servers 22 70 15 ${sServerList} 2> ${sTagFile}" ;
+	sSelectTag=$(cat "${sTagFile}") ;
+	rm -f "${sTagFile}" ;
+	
+	if [ "1" != "1${sSelectTag}" ] ; then
+		clear ;
+		echo "Connecting to ${sSelectTag}" ;
+		ssh "${sSshUser}@${sSelectTag}" ;
+	fi ;
+else 
+## Show host list
+	cat > "${sXsltFileAll}" <<EOD
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:fo="http://www.w3.org/1999/XSL/Format">
+<xsl:output method="text" encoding="ISO-8859-1"/>
+<xsl:template match="/"><xsl:apply-templates select="${sXsltPathServer}"/></xsl:template>
+<xsl:template match="/servers/server"><![CDATA[ ${sSshUser}@]]><xsl:value-of select="host"/></xsl:template>
+</xsl:stylesheet>
+EOD
+	xsltproc "${sXsltFileAll}" "${sSshConfigFile}" ;
+	echo ' ' ;
+	rm -f "${sXsltFileAll}";
+fi;
