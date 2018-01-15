@@ -22,9 +22,11 @@ _Global Variable_
 This configuration file is in XML. 
 
 example : 
+```xml
 <servers>
-	<server><company>Company</company><host>server1.company.com</host></server>
-	<server><company>Company</company><host>server2.company.com</host></server>
-	<server><company>Other Company</company><host>server1.other-company.com</host></server>
+    <server><company>Company</company><host>server1.company.com</host></server>
+    <server><company>Company</company><host>server2.company.com</host></server>
+    <server><company>Other Company</company><host>server1.other-company.com</host></server>
 </servers>
+```
 
